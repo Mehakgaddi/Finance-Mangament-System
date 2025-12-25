@@ -13,7 +13,11 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import Analytics from "../components/Analytics";
+
 const { RangePicker } = DatePicker;
+
+// ✅ RENDER BACKEND URL
+const BASE_URL = "https://finance-management-system.onrender.com";
 
 function Home() {
   const [showAddEditTransactionModal, setShowAddEditTransactionModal] =
@@ -29,10 +33,10 @@ function Home() {
   const getTransactions = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("Lab-Management-User"));
-
       setLoading(true);
+
       const response = await axios.post(
-        "/api/transactions/get-all-transactions",
+        `${BASE_URL}/api/transactions/get-all-transactions`,
         {
           userid: user._id,
           frequency,
@@ -40,7 +44,7 @@ function Home() {
           type,
         }
       );
-      console.log(response.data);
+
       setTransactionsData(response.data);
       setLoading(false);
     } catch (error) {
@@ -52,9 +56,14 @@ function Home() {
   const deleteTransaction = async (record) => {
     try {
       setLoading(true);
-      await axios.post("/api/transactions/delete-transaction", {
-        transactionId: record._id,
-      });
+
+      await axios.post(
+        `${BASE_URL}/api/transactions/delete-transaction`,
+        {
+          transactionId: record._id,
+        }
+      );
+
       message.success("Transaction deleted successfully");
       getTransactions();
       setLoading(false);
@@ -63,6 +72,7 @@ function Home() {
       message.error("Something went wrong");
     }
   };
+
   useEffect(() => {
     getTransactions();
   }, [frequency, selectedRange, type]);
@@ -114,15 +124,15 @@ function Home() {
   return (
     <DefaultLayout>
       {loading && <Spinner />}
-      <div className="filter d-flex justify-content-between align-items-center ">
+
+      <div className="filter d-flex justify-content-between align-items-center">
         <div className="d-flex">
           <div className="d-flex flex-column">
-            <h6 className="no-print"> Select Frequency</h6>
+            <h6 className="no-print">Select Frequency</h6>
             <Select value={frequency} onChange={(value) => setFrequency(value)}>
               <Select.Option value="7">Last 1 Week</Select.Option>
               <Select.Option value="30">Last 1 Month</Select.Option>
               <Select.Option value="365">Last 1 Year</Select.Option>
-              {/* <Select.Option value='custom'>Custom</Select.Option> */}
             </Select>
 
             {frequency === "custom" && (
@@ -134,6 +144,7 @@ function Home() {
               </div>
             )}
           </div>
+
           <div className="d-flex flex-column mx-5">
             <h6 className="no-print">Select Type</h6>
             <Select value={type} onChange={(value) => setType(value)}>
@@ -141,58 +152,47 @@ function Home() {
               <Select.Option value="income">Income</Select.Option>
               <Select.Option value="expense">Expense</Select.Option>
             </Select>
+          </div>
+        </div>
 
-            {frequency === "custom" && (
-              <div className="mt-2">
-                <RangePicker
-                  value={selectedRange}
-                  onChange={(values) => setSelectedRange(values)}
-                />
-              </div>
-            )}
-          </div>
-        </div>
-        <div>
-          <div className="d-flex no-print">
-            <div>
-              <div className="view-switch mx-5">
-                <UnorderedListOutlined
-                  className={`mx-2 ${
-                    viewType === "table" ? "active-icon" : "inactive-icon"
-                  }`}
-                  onClick={() => setViewType("table")}
-                />
-                <AreaChartOutlined
-                  className={`mx-2 ${
-                    viewType === "analytics" ? "active-icon" : "inactive-icon"
-                  }`}
-                  onClick={() => setViewType("analytics")}
-                />
-              </div>
-            </div>
-            <button className="secondary mx-2" onClick={() => window.print()}>
-              Print Report
-            </button>
-            <button
-              className="primary"
-              onClick={() => setShowAddEditTransactionModal(true)}
-            >
-              Add New
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="table-analytics">
-        {viewType === "table" ? (
-          <div className="table">
-            <Table
-              columns={columns}
-              dataSource={transactionsData.map((item) => ({
-                ...item,
-                key: item._id,
-              }))}
+        <div className="d-flex no-print">
+          <div className="view-switch mx-5">
+            <UnorderedListOutlined
+              className={`mx-2 ${
+                viewType === "table" ? "active-icon" : "inactive-icon"
+              }`}
+              onClick={() => setViewType("table")}
+            />
+            <AreaChartOutlined
+              className={`mx-2 ${
+                viewType === "analytics" ? "active-icon" : "inactive-icon"
+              }`}
+              onClick={() => setViewType("analytics")}
             />
           </div>
+
+          <button className="secondary mx-2" onClick={() => window.print()}>
+            Print Report
+          </button>
+
+          <button
+            className="primary"
+            onClick={() => setShowAddEditTransactionModal(true)}
+          >
+            Add New
+          </button>
+        </div>
+      </div>
+
+      <div className="table-analytics">
+        {viewType === "table" ? (
+          <Table
+            columns={columns}
+            dataSource={transactionsData.map((item) => ({
+              ...item,
+              key: item._id,
+            }))}
+          />
         ) : (
           <Analytics transactions={transactionsData} />
         )}

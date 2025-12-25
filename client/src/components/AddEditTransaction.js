@@ -4,6 +4,9 @@ import Spinner from "./Spinner";
 import axios from "axios";
 import moment from "moment";
 
+// ✅ RENDER BACKEND URL
+const BASE_URL = "https://finance-management-system.onrender.com";
+
 function AddEditTransaction({
   setShowAddEditTransactionModal,
   showAddEditTransactionModal,
@@ -17,7 +20,8 @@ function AddEditTransaction({
     try {
       const user = JSON.parse(localStorage.getItem("Lab-Management-User"));
       setLoading(true);
-      // Convert date to proper format - handle moment objects or strings
+
+      // Convert date to proper format
       let dateValue = new Date();
       if (values.date) {
         if (values.date._isAMomentObject) {
@@ -26,23 +30,34 @@ function AddEditTransaction({
           dateValue = new Date(values.date);
         }
       }
+
       const dataToSend = {
         ...values,
         userid: user._id,
         date: dateValue,
       };
+
       if (selectedItemForEdit) {
-        await axios.post("/api/transactions/edit-transaction", {
-          payload: dataToSend,
-          transactionId: selectedItemForEdit._id,
-        });
+        // ✅ EDIT TRANSACTION
+        await axios.post(
+          `${BASE_URL}/api/transactions/edit-transaction`,
+          {
+            payload: dataToSend,
+            transactionId: selectedItemForEdit._id,
+          }
+        );
         getTransactions();
-        message.success("Transaction updated successfull");
+        message.success("Transaction updated successfully");
       } else {
-        await axios.post("/api/transactions/add-transaction", dataToSend);
+        // ✅ ADD TRANSACTION
+        await axios.post(
+          `${BASE_URL}/api/transactions/add-transaction`,
+          dataToSend
+        );
         getTransactions();
-        message.success("Transaction added successfull");
+        message.success("Transaction added successfully");
       }
+
       setShowAddEditTransactionModal(false);
       setSelectedItemForEdit(null);
       setLoading(false);
@@ -55,10 +70,11 @@ function AddEditTransaction({
       setLoading(false);
     }
   };
+
   return (
     <Modal
       title={selectedItemForEdit ? "Edit Transaction" : "Add Transaction"}
-      visible={showAddEditTransactionModal}
+      open={showAddEditTransactionModal}
       onCancel={() => setShowAddEditTransactionModal(false)}
       footer={false}
     >
@@ -68,34 +84,25 @@ function AddEditTransaction({
         layout="vertical"
         className="transaction-form"
         onFinish={onFinish}
-        initialValues={selectedItemForEdit}
+        initialValues={{
+          ...selectedItemForEdit,
+          date: selectedItemForEdit?.date
+            ? moment(selectedItemForEdit.date)
+            : null,
+        }}
       >
         <Form.Item
           label="Amount"
           name="amount"
-          rules={[
-            {
-              required: true,
-              message: "Please input the amount!",
-            },
-          ]}
+          rules={[{ required: true, message: "Please input the amount!" }]}
         >
-          <Input
-            prefix="Rs: "
-            type="number"
-            placeholder="Enter amount in Rupees"
-          />
+          <Input prefix="Rs: " type="number" placeholder="Enter amount in Rupees" />
         </Form.Item>
 
         <Form.Item
           label="Type"
           name="type"
-          rules={[
-            {
-              required: true,
-              message: "Please select the type!",
-            },
-          ]}
+          rules={[{ required: true, message: "Please select the type!" }]}
         >
           <Select placeholder="Select transaction type">
             <Select.Option value="income">Income</Select.Option>
@@ -106,12 +113,7 @@ function AddEditTransaction({
         <Form.Item
           label="Category"
           name="category"
-          rules={[
-            {
-              required: true,
-              message: "Please select the category!",
-            },
-          ]}
+          rules={[{ required: true, message: "Please select the category!" }]}
         >
           <Select placeholder="Select transaction category">
             <Select.Option value="Channeling Services">
@@ -140,12 +142,7 @@ function AddEditTransaction({
         <Form.Item
           label="Date"
           name="date"
-          rules={[
-            {
-              required: true,
-              message: "Please select the date!",
-            },
-          ]}
+          rules={[{ required: true, message: "Please select the date!" }]}
         >
           <DatePicker format="YYYY-MM-DD" />
         </Form.Item>
@@ -153,27 +150,17 @@ function AddEditTransaction({
         <Form.Item
           label="Reference"
           name="reference"
-          rules={[
-            {
-              required: true,
-              message: "Please enter the reference!",
-            },
-          ]}
+          rules={[{ required: true, message: "Please enter the reference!" }]}
         >
-          <Input placeholder="Enter transaction reference" type="text" />
+          <Input placeholder="Enter transaction reference" />
         </Form.Item>
 
         <Form.Item
           label="Description"
           name="description"
-          rules={[
-            {
-              required: true,
-              message: "Please enter description!",
-            },
-          ]}
+          rules={[{ required: true, message: "Please enter description!" }]}
         >
-          <Input placeholder="Enter transaction description" type="text" />
+          <Input placeholder="Enter transaction description" />
         </Form.Item>
 
         <div className="dflex justify-content-end">
