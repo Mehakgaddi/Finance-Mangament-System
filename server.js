@@ -1,9 +1,12 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors");
+
 // require the DB connection (it will attempt to connect on import)
 const dbConnect = require("./dbConnect");
 const app = express();
 app.use(express.json());
+app.use(cors());
 const userRoute = require("./routes/usersRoute");
 const transactionsRoute = require("./routes/transactionsRoute");
 
